@@ -7,6 +7,9 @@ public class AIController : MonoBehaviour
     // Reference to the Drive script attached to the AI car
     Drive ds;
 
+    // Reference to the AIScanner script attached to the AI car
+    AIScanner scanner; 
+
     // Reference to the circuit containing waypoints for the AI car to follow
     public Circuit circuit;
 
@@ -53,6 +56,9 @@ public class AIController : MonoBehaviour
         // Get the Drive component attached to this GameObject
         ds = this.GetComponent<Drive>();
 
+        // Get the AIScanner component attached to this GameObject
+        scanner = this.GetComponent<AIScanner>();
+
         // Set the initial target and nextTarget positions to the first waypoint's position and the next waypoint's position
         target = circuit.waypoints[currentWP].transform.position;
         nextTarget = circuit.waypoints[currentWP + 1].transform.position;
@@ -65,7 +71,7 @@ public class AIController : MonoBehaviour
         // Remove the collider component from the tracker GameObject
         DestroyImmediate(tracker.GetComponent<Collider>());
         // Disable the mesh renderer of the tracker GameObject to hide it
-        tracker.GetComponent<MeshRenderer>().enabled = false;
+        tracker.GetComponent<MeshRenderer>().enabled = true;
         // Set the tracker's initial position to match the car's position
         tracker.transform.position = ds.rb.gameObject.transform.position;
         // Set the tracker's initial rotation to match the car's rotation
@@ -138,16 +144,25 @@ public class AIController : MonoBehaviour
             Invoke("ResetLayer", 3);
         }
 
-        if (Time.time < ds.rb.GetComponent<AvoidDetector>().avoidTime)
+       
+
+        if (AIScanner.takeOver)
         {
-            localTarget = tracker.transform.right * ds.rb.GetComponent<AvoidDetector>().avoidPath;
+            localTarget = tracker.transform.position + new Vector3(0.5f, 0, 5);
+            Debug.Log("True: " + AIScanner.takeOver);
+
+            Delay(3.0f);
         }
-        else 
+        else
         {
             // Calculate local target position relative to the car
             localTarget = ds.rb.gameObject.transform.InverseTransformPoint(tracker.transform.position);
+            Debug.Log("False: " + AIScanner.takeOver);
 
         }
+
+        // Calculate local target position relative to the car
+       // localTarget = ds.rb.gameObject.transform.InverseTransformPoint(tracker.transform.position);
 
         // Calculate target angle for steering
         targetAngle = Mathf.Atan2(localTarget.x, localTarget.z) * Mathf.Rad2Deg;
@@ -164,10 +179,7 @@ public class AIController : MonoBehaviour
 
         //Debug.DrawLine(circuit.highSpeedCurve.transform.position, ds.rb.transform.position);
        // Debug.Log("Wall Distance: " + Vector3.Distance(circuit.highSpeedCurve[0].transform.position, ds.rb.transform.position));
-        Debug.Log("Speed: " + ds.currentSpeed);
-
-
-
+        //Debug.Log("Speed: " + ds.currentSpeed);
 
         //brake = 0;
         //accel = 1.0f;
@@ -278,6 +290,11 @@ public class AIController : MonoBehaviour
             accel = 1.0f;
 
         }
+    }
+
+    IEnumerator Delay(float seconds) 
+    {
+        yield return new WaitForSeconds(seconds) ;
     }
 
 }
