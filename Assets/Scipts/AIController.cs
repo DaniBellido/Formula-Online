@@ -15,6 +15,8 @@ public class AIController : MonoBehaviour
     public float brakingSensitivity = 1.1f;
     public float steeringSensitivity = 0.01f;
 
+
+
     // Initialise brake and acceleration values
     float brake = 0;
     float accel = 1.0f;
@@ -41,7 +43,9 @@ public class AIController : MonoBehaviour
     int currentTrackerWP = 0;
 
     bool turn1 = true;
-   
+
+
+    float lastTimeMoving = 0;
 
     // Start is called before the first frame update
     void Start()
@@ -66,6 +70,8 @@ public class AIController : MonoBehaviour
         tracker.transform.position = ds.rb.gameObject.transform.position;
         // Set the tracker's initial rotation to match the car's rotation
         tracker.transform.rotation = ds.rb.gameObject.transform.rotation;
+
+        //this.GetComponent<Ghost>().enabled = false;
     }
 
 
@@ -101,6 +107,12 @@ public class AIController : MonoBehaviour
 
     }
 
+    void ResetLayer() 
+    {
+        ds.rb.gameObject.layer = 0;
+        //this.GetComponent<Ghost>().enabled = false;
+    }
+
     // Update is called once per frame
     void Update()
     {
@@ -109,10 +121,36 @@ public class AIController : MonoBehaviour
         ProgressTracker();
 
         // Calculate local target position relative to the car
-        Vector3 localTarget = ds.rb.gameObject.transform.InverseTransformPoint(tracker.transform.position);
+        Vector3 localTarget;
+
+        float targetAngle;
+
+        if(ds.rb.velocity.magnitude > 1)
+            lastTimeMoving = Time.time;
+
+        if (Time.time > lastTimeMoving + 4) 
+        {
+            ds.rb.gameObject.transform.position = circuit.waypoints[(currentTrackerWP)].transform.position 
+                + Vector3.up + new Vector3(Random.Range(-1, 1), 0, Random.Range(-1, 1));
+            tracker.transform.position = ds.rb.gameObject.transform.position;
+            ds.rb.gameObject.layer = 8;
+            //this.GetComponent<Ghost>().enabled = true;
+            Invoke("ResetLayer", 3);
+        }
+
+        if (Time.time < ds.rb.GetComponent<AvoidDetector>().avoidTime)
+        {
+            localTarget = tracker.transform.right * ds.rb.GetComponent<AvoidDetector>().avoidPath;
+        }
+        else 
+        {
+            // Calculate local target position relative to the car
+            localTarget = ds.rb.gameObject.transform.InverseTransformPoint(tracker.transform.position);
+
+        }
 
         // Calculate target angle for steering
-        float targetAngle = Mathf.Atan2(localTarget.x, localTarget.z) * Mathf.Rad2Deg;
+        targetAngle = Mathf.Atan2(localTarget.x, localTarget.z) * Mathf.Rad2Deg;
 
         // Clamp steering angle between -1 and 1
         float steer = Mathf.Clamp(targetAngle * steeringSensitivity, -1, 1) * Mathf.Sign(ds.currentSpeed);
