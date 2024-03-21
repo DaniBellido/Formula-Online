@@ -33,7 +33,7 @@ public class AIScanner : MonoBehaviour
             if (hit.collider.CompareTag("car"))
             {
                 // delete this line
-                Debug.Log("FRONT HIT");
+                //Debug.Log("FRONT HIT");
 
                 // Add behaviour here
                 overtake = true;
@@ -41,13 +41,13 @@ public class AIScanner : MonoBehaviour
             else
             {
                 overtake = false;
-                Debug.Log("HELLOOOOOOOOOOOOOOOO");
+                //Debug.Log("HELLOOOOOOOOOOOOOOOO");
             }
         }
         else
         {
             overtake = false;
-            Debug.Log("NOT COLLIDING");
+            //Debug.Log("NOT COLLIDING");
         }
         // Drawing the ray for debbuging purposes
         Debug.DrawRay(frontRayOrigin, frontRayDirection * raycastLength, Color.red);
@@ -119,13 +119,14 @@ public class AIScanner : MonoBehaviour
             Debug.Log("GO, GO! ");
         }
         // Drawing the ray for debbuging purposes
-        Debug.DrawRay(brakeRayOrigin, brakeRayDirection * brakeRayLength, Color.red);
+        Debug.DrawRay(brakeRayOrigin, brakeRayDirection * brakeRayLength, Color.blue);
     }
 
     // Update is called once per frame
     void Update()
     {
         CarDetector();
+        CurveDetector();
     }
 
 

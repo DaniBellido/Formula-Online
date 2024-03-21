@@ -5,13 +5,7 @@ using UnityEngine;
 public class Circuit : MonoBehaviour
 {
     public GameObject[] waypoints;
-    //public Collider[] brakeColliders;
-    public GameObject[] highSpeedCurve;
-
-    //public Collider[] GetBrakeColliders()
-    //{
-    //    return brakeColliders;
-    //}
+   
 
     void OnDrawGizmos()
     {

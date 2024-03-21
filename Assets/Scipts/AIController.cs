@@ -7,9 +7,6 @@ public class AIController : MonoBehaviour
     // Reference to the Drive script attached to the AI car
     Drive ds;
 
-    // Reference to the AIScanner script attached to the AI car
-    AIScanner scanner; 
-
     // Reference to the circuit containing waypoints for the AI car to follow
     public Circuit circuit;
 
@@ -17,8 +14,6 @@ public class AIController : MonoBehaviour
     public float accelSensitivity = 0.3f;
     public float brakingSensitivity = 1.1f;
     public float steeringSensitivity = 0.01f;
-
-
 
     // Initialise brake and acceleration values
     float brake = 0;
@@ -45,7 +40,7 @@ public class AIController : MonoBehaviour
     // Index of the current waypoint being tracked by the AI
     int currentTrackerWP = 0;
 
-    bool turn1 = true;
+    //bool turn1 = true;
 
 
     float lastTimeMoving = 0;
@@ -55,9 +50,6 @@ public class AIController : MonoBehaviour
     {
         // Get the Drive component attached to this GameObject
         ds = this.GetComponent<Drive>();
-
-        // Get the AIScanner component attached to this GameObject
-        scanner = this.GetComponent<AIScanner>();
 
         // Set the initial target and nextTarget positions to the first waypoint's position and the next waypoint's position
         target = circuit.waypoints[currentWP].transform.position;
@@ -71,7 +63,7 @@ public class AIController : MonoBehaviour
         // Remove the collider component from the tracker GameObject
         DestroyImmediate(tracker.GetComponent<Collider>());
         // Disable the mesh renderer of the tracker GameObject to hide it
-        tracker.GetComponent<MeshRenderer>().enabled = false;
+        tracker.GetComponent<MeshRenderer>().enabled = true;
         // Set the tracker's initial position to match the car's position
         tracker.transform.position = ds.rb.gameObject.transform.position;
         // Set the tracker's initial rotation to match the car's rotation
@@ -149,7 +141,7 @@ public class AIController : MonoBehaviour
         if (AIScanner.overtake)
         {
             localTarget = tracker.transform.position + new Vector3(0.5f, 0, 5);
-            Debug.Log("True: " + AIScanner.overtake);
+            //Debug.Log("True: " + AIScanner.overtake);
 
             Delay(3.0f);
         }
@@ -157,12 +149,9 @@ public class AIController : MonoBehaviour
         {
             // Calculate local target position relative to the car
             localTarget = ds.rb.gameObject.transform.InverseTransformPoint(tracker.transform.position);
-            Debug.Log("False: " + AIScanner.overtake);
+            //Debug.Log("False: " + AIScanner.overtake);
 
         }
-
-        // Calculate local target position relative to the car
-       // localTarget = ds.rb.gameObject.transform.InverseTransformPoint(tracker.transform.position);
 
         // Calculate target angle for steering
         targetAngle = Mathf.Atan2(localTarget.x, localTarget.z) * Mathf.Rad2Deg;
@@ -177,25 +166,18 @@ public class AIController : MonoBehaviour
         float corner = Mathf.Clamp(Mathf.Abs(targetAngle), 0, 90);
         float cornerFactor = corner / 90.0f;
 
-        //Debug.DrawLine(circuit.highSpeedCurve.transform.position, ds.rb.transform.position);
-       // Debug.Log("Wall Distance: " + Vector3.Distance(circuit.highSpeedCurve[0].transform.position, ds.rb.transform.position));
-        //Debug.Log("Speed: " + ds.currentSpeed);
 
-        //brake = 0;
-        //accel = 1.0f;
-
-     
-
-        switch (turn1) 
+        if (AIScanner.brake && ds.currentSpeed > 65.0f)
         {
-            case true:
-                HighSpeedTurnOneSolution(); break;
-
-            case false: 
-                HighSpeedTurnTwoSolution(); break;
-
+            brake = 1.0f;
+            accel = 0;
+            Debug.Log("AM I BREAKING?");
         }
-        
+        else 
+        {
+            brake = 0.0f;
+            accel = 1;
+        }
 
 
         // Smooth cornering: gradually reduce speed as the car approaches a curve
@@ -221,75 +203,6 @@ public class AIController : MonoBehaviour
         ds.CalculateEngineSound();
 
         
-    }
-
-    void HighSpeedTurnOneSolution() 
-    {
-        // Vector desde el coche hacia el punto en la curva
-        Vector3 toCurve = circuit.highSpeedCurve[0].transform.position - ds.rb.transform.position;
-
-        // Vector de dirección del coche
-        Vector3 carDirection = ds.rb.transform.forward;
-
-        // Normalizamos los vectores para obtener solo la dirección
-        toCurve.Normalize();
-        carDirection.Normalize();
-
-        // Calculamos el ángulo entre los dos vectores
-        float angle = Vector3.Angle(toCurve, carDirection);
-
-        //##CURVE SOLUTION NEEDS TO BE FIXED
-        if (Vector3.Distance(circuit.highSpeedCurve[0].transform.position, ds.rb.transform.position) < 120.0f &&
-            Vector3.Distance(circuit.highSpeedCurve[0].transform.position, ds.rb.transform.position) > 20.0f && ds.currentSpeed > 65.0f)
-        {
-
-            brake = 1.0f;
-            accel = 0;
-
-            if (ds.currentSpeed < 70.0f)
-                turn1 = false;
-
-        }
-        else
-        {
-            brake = 0;
-            accel = 1.0f;
-        }
-    }
-
-    void HighSpeedTurnTwoSolution()
-    {
-        // Vector desde el coche hacia el punto en la curva
-        Vector3 toCurve = circuit.highSpeedCurve[1].transform.position - ds.rb.transform.position;
-
-        // Vector de dirección del coche
-        Vector3 carDirection = ds.rb.transform.forward;
-
-        // Normalizamos los vectores para obtener solo la dirección
-        toCurve.Normalize();
-        carDirection.Normalize();
-
-        // Calculamos el ángulo entre los dos vectores
-        float angle = Vector3.Angle(toCurve, carDirection);
-
-        //##CURVE SOLUTION NEEDS TO BE FIXED
-        if (Vector3.Distance(circuit.highSpeedCurve[1].transform.position, ds.rb.transform.position) < 120.0f &&
-            Vector3.Distance(circuit.highSpeedCurve[1].transform.position, ds.rb.transform.position) > 20.0f && ds.currentSpeed > 65.0f)
-        {
-
-            brake = 1.0f;
-            accel = 0;
-            if (ds.currentSpeed < 70.0f)
-                turn1 = true;
-
-
-        }
-        else
-        {
-            brake = 0;
-            accel = 1.0f;
-
-        }
     }
 
     IEnumerator Delay(float seconds) 
