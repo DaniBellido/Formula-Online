@@ -71,7 +71,7 @@ public class AIController : MonoBehaviour
         // Remove the collider component from the tracker GameObject
         DestroyImmediate(tracker.GetComponent<Collider>());
         // Disable the mesh renderer of the tracker GameObject to hide it
-        tracker.GetComponent<MeshRenderer>().enabled = true;
+        tracker.GetComponent<MeshRenderer>().enabled = false;
         // Set the tracker's initial position to match the car's position
         tracker.transform.position = ds.rb.gameObject.transform.position;
         // Set the tracker's initial rotation to match the car's rotation
@@ -146,10 +146,10 @@ public class AIController : MonoBehaviour
 
        
 
-        if (AIScanner.takeOver)
+        if (AIScanner.overtake)
         {
             localTarget = tracker.transform.position + new Vector3(0.5f, 0, 5);
-            Debug.Log("True: " + AIScanner.takeOver);
+            Debug.Log("True: " + AIScanner.overtake);
 
             Delay(3.0f);
         }
@@ -157,7 +157,7 @@ public class AIController : MonoBehaviour
         {
             // Calculate local target position relative to the car
             localTarget = ds.rb.gameObject.transform.InverseTransformPoint(tracker.transform.position);
-            Debug.Log("False: " + AIScanner.takeOver);
+            Debug.Log("False: " + AIScanner.overtake);
 
         }
 

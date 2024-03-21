@@ -5,12 +5,11 @@ using UnityEngine;
 public class AIScanner : MonoBehaviour
 {
     public float raycastLength = 5f;
-    public static bool takeOver = false;
-  
+    public float brakeRayLength = 20f;
+    public static bool overtake = false;
+    public static bool brake = false;
 
-
-    // Update is called once per frame
-    void Update()
+    void CarDetector() 
     {
         // Get position and direction of the FRONT Raycast
         Vector3 frontRayOrigin = this.transform.position; // Origin can be adjusted adding offset value
@@ -21,7 +20,7 @@ public class AIScanner : MonoBehaviour
         Vector3 rightRayDirection = this.transform.right;
 
         // Get position and direction of the LEFT Raycast
-        Vector3 leftRayOrigin = this.transform.position; 
+        Vector3 leftRayOrigin = this.transform.position;
         Vector3 leftRayDirection = -this.transform.right;
 
 
@@ -37,17 +36,17 @@ public class AIScanner : MonoBehaviour
                 Debug.Log("FRONT HIT");
 
                 // Add behaviour here
-                takeOver = true;
+                overtake = true;
             }
             else
             {
-                takeOver = false;
+                overtake = false;
                 Debug.Log("HELLOOOOOOOOOOOOOOOO");
             }
         }
         else
         {
-            takeOver = false;
+            overtake = false;
             Debug.Log("NOT COLLIDING");
         }
         // Drawing the ray for debbuging purposes
@@ -86,6 +85,50 @@ public class AIScanner : MonoBehaviour
         // Drawing the ray for debbuging purposes
         Debug.DrawRay(leftRayOrigin, leftRayDirection * 2f, Color.red);
     }
+
+    void CurveDetector() 
+    {
+        // Get position and direction of the FRONT Raycast
+        Vector3 brakeRayOrigin = this.transform.position; // Origin can be adjusted adding offset value
+        Vector3 brakeRayDirection = this.transform.forward;
+
+
+
+        // Raycast forward
+        RaycastHit hit;
+        if (Physics.Raycast(brakeRayOrigin, brakeRayDirection, out hit, brakeRayLength))
+        {
+            // Check if it hits objects tagged as "curve"
+            if (hit.collider.CompareTag("curve"))
+            {
+                // delete this line
+                Debug.Log("BRAKE");
+
+                // Add behaviour here
+                brake = true;
+            }
+            else
+            {
+                brake = false;
+                Debug.Log("GO!");
+            }
+        }
+        else
+        {
+            brake = false;
+            Debug.Log("GO, GO! ");
+        }
+        // Drawing the ray for debbuging purposes
+        Debug.DrawRay(brakeRayOrigin, brakeRayDirection * brakeRayLength, Color.red);
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        CarDetector();
+    }
+
+
 }
 
 
